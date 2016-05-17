@@ -1,0 +1,171 @@
+<!document>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+        <script src="http://treetopflyer.github.io/vcore/lib.js"></script>
+        <script src="http://treetopflyer.github.io/NN/lib.js"></script>
+        <script></script>
+        <style>
+            *[data-import-csv]{
+                padding:20px;
+                border:1px dashed #aaa;
+            }
+            *[data-import-csv].Import{
+                background:#aaa;
+                color:#fff;
+                border:1px dashed #fff;
+            }
+            ul.Labels{
+                float:left;
+                margin:0;
+                padding:0;
+                background:#ddd;
+                overflow:hidden;
+            }
+            ul.Labels li{
+                display:block;
+                position:relative;
+                float:left;
+                width:15px;
+                height:15px;
+                margin:2px;
+                border:1px solid #444;
+                background:none;
+            }
+            ul.Labels li.Active{
+                background:#000;
+            }
+        </style>
+    </head>
+    <body ng-app="Application" ng-controller="Controller">
+        <div data-import-csv="table">drag here</div>
+        <table>
+            <thead>
+                <th>Labels Human</th>
+                <th>Labels Machine</th>
+                <th ng-repeat="column in table.head track by $index">{{column.label}}</th>
+            </thead>
+            <tbody>
+                <tr ng-repeat="row in table.body track by $index">
+                    <td>
+                        <ul class="Labels Human">
+                            <li
+                            ng-repeat="label in row.label.human track by $index"
+                            ng-class="{'Active':row.label.human[$index] != false}"
+                            ng-click="row.label.human[$index] = !row.label.human[$index]"></li>
+                        </ul>
+                    </td>
+                    <td>
+                        <ul class="Labels Machine">
+                            <li ng-repeat="label in row.label.machine track by $index"></li>
+                        </ul>
+                    </td>
+                    <td ng-repeat="cell in row.data track by $index">{{cell}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+<script>
+var App;
+App = angular.module("Application", []);
+App.directive("importCsv", ["$parse", function(inParser){
+    
+    console.log("bound!");
+    
+    return{
+        link : function(inScope, inElement, inAttributes){
+
+            function handlerEnter(inEvent){
+                if(inEvent){
+                    inEvent.preventDefault();
+                }
+                inElement.addClass("Import");
+                inEvent.dataTransfer.effectAllowed = 'copy';
+                return false;
+            }
+            
+            function handlerDrop(inEvent){
+                inElement.removeClass("Import");
+                if(inEvent){
+                    inEvent.preventDefault();
+                }
+                parse(event.dataTransfer.files[0]);
+                return false;
+            }
+            
+            function parse(inFile){
+                var parser = new FileReader();
+                parser.onload = function(inEvent){
+                    
+                    var i, j;
+                    var contents;
+                    var table;
+                    var row;
+                    var limit;
+                    
+                    contents = inEvent.target.result.split("\n");
+                    contents.pop();
+                    limit = contents.length-1;
+                    if(limit > 100){
+                        
+                        alert(limit + " is too many rows. reducing to the first 100");
+                        
+                        limit = 100;
+                    }
+                    
+                    table = {};
+                    table.head = contents[0].split(",");
+                    for(i=0; i<table.head.length; i++){
+                        table.head[i] = {
+                            active:true,
+                            label:table.head[i],
+                            min:9999999999,
+                            max:-9999999999,
+                            map:{}
+                        };
+                    }
+                    table.body = [];
+
+                    for(i=1; i<limit; i++){
+                        row = {};
+                        row.data = [];
+                        row.data = contents[i].split(",");
+                        for(j=0; j<row.data.length; j++){
+                            row.data[j] = parseFloat(row.data[j]) || 0;
+                        }
+                        row.label = {
+                            human : [false, false, false, false],
+                            machine : [0, 0, 0, 0]
+                        };
+                        table.body.push(row);
+                    }
+                    
+                    
+                    inScope.$apply(function(){
+                        inParser(inAttributes.importCsv).assign(inScope, table);
+                    })
+                    
+                    
+                };
+                parser.readAsText(inFile);
+                
+            }
+            
+            function handlerLeave(){
+                inElement.removeClass("Import");
+            }
+            
+            inElement.on("dragenter dragstart dragend dragleave dragover drag drop", function (inEvent) {inEvent.preventDefault();});
+            inElement.on('dragenter', handlerEnter);
+            inElement.on('dragleave', handlerLeave);
+            inElement.on('drop', handlerDrop);
+        }
+    };
+    
+}]);
+App.controller("Controller", ["$scope", function(inScope){
+    inScope.table = undefined;
+}]);
+
+</script>
+</html>
