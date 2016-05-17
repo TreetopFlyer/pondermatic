@@ -1,3 +1,11 @@
 <h2>profile</h2>
-<strong>{{name}}</strong>
-<span>{{id}}</span>
+<strong>{{profile.name}}</strong>
+<span>{{profile.id}}</span>
+
+<h3>projects</h3>
+{{#each projects}}
+    <dl>
+        <dt>{{profile.name}}</dt>
+        <dd>{{_id}}</dd>
+    </dl>
+{{/each}}

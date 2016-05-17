@@ -38,6 +38,7 @@ db.createUser = function(inName, inID){
         })
     });
 };
+
 db.getUser = function(inID){
     return new Promise(function(inResolve, inReject){
         UserClass.findOne({"profile.id":inID}, function(inError, inUser){
@@ -65,13 +66,15 @@ db.createProject = function(inUserObject, inName){
     });
 };
 
-db.listProjects = function(inID){
+db.getOverview = function(inUserID){
     return new Promise(function(inResolve, inReject){
-        UserClass.findOne({"profile.id":inID}, {"projects.profile":1}, function(inError, inUser){
-            if(!inError && inUser){
-                inResolve(inUser.projects);
+        UserClass.findOne({"profile.id":inUserID})
+        .select({"profile":1, "projects.profile":1, "projects._id":1})
+        .exec(function(inError, inUser){
+            if(!inError){
+                inResolve(inUser);
             }else{
-                inReject({error:"user not found"});
+                inReject(inError);
             }
         });
     });

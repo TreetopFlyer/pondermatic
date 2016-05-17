@@ -13,7 +13,7 @@ var GETPromise = function(inURL, inQuery){
 router.get("/profile", function(inReq, inRes){
     
     console.log("at profile page. you are", inReq.Auth.ID);
-    db.getUser(inReq.Auth.ID).then(
+    db.getOverview(inReq.Auth.ID).then(
     function(inResolveData){
         console.log("profile found in db:", inResolveData);
         inRes.render("profile", inResolveData);
