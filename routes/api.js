@@ -2,21 +2,62 @@ var express = require('express');
 var router = express.Router();
 var db = require('../db/mongoose.js');
 
-router.get("/create", function(inReq, inRes){
-    db.getUser(inReq.Auth.ID).then(function(inResolveData){
-        return db.createProject(inResolveData, "that proj");
-    }).then(function(inResolveData){
+router.get("/create/:name", function(inReq, inRes){
+    db.getUser(inReq.Auth.ID)
+    .then(function(inUser){
+        return db.createProject(inUser, inReq.params.name);
+    })
+    .then(function(inResolveData){
         inRes.json(inResolveData);
     });
 });
 
-router.get("/save", function(inReq, inRes){
+router.post("/save", function(inReq, inRes){
 
+    db.getUser(inReq.Auth.ID)
+    .then(function(inUser){
+        inUser.projects.id(inReq.body._id).remove();
+        inUser.projects.push(inReq.body);
+        return db.saveUser(inUser);
+    }, function(){
+
+    })
+    .then(function(inResolveData){
+        inRes.json(inResolveData);
+    }, function(inRejectData){
+        console.log(inRejectData);
+    });
 });
 
-router.get("/load", function(inReq, inRes){
-
+router.get("/load/:id", function(inReq, inRes){
+    
+    console.log("load called for", inReq.params.id);
+    
+    db.getUser(inReq.Auth.ID)
+    .then(function(inUser){
+        inRes.json(inUser.projects.id(inReq.params.id));
+    }, function(inError){
+        console.log(inError);
+    });
 });
 
+router.get("/delete/:id", function(inReq, inRes){
+    
+    var match;
+    var deletedProfile = {};
+    
+    db.getUser(inReq.Auth.ID)
+    .then(function(inUser){
+        match = inUser.projects.id(inReq.params.id);
+        deletedProfile = match.profile;
+        match.remove();
+        return db.saveUser(inUser);
+    })
+    .then(function(inResolveData){
+            inRes.json(deletedProfile);
+        }, function(inRejectData){
+            inRes.json(inRejectData);
+    });
+});
 
 module.exports = router;

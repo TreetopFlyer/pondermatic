@@ -1,11 +1,49 @@
-<h2>profile</h2>
-<strong>{{profile.name}}</strong>
-<span>{{profile.id}}</span>
+<div class="container">
+    <div class="row">
 
-<h3>projects</h3>
-{{#each projects}}
-    <dl>
-        <dt>{{profile.name}}</dt>
-        <dd>{{_id}}</dd>
-    </dl>
-{{/each}}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Profile</h3>
+            </div>
+            <div class="panel-body">
+                <strong>{{profile.name}}</strong>
+                <span>{{profile.id}}</span>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Projects</h3>
+            </div>
+            <div class="panel-body">
+                <form method="POST">
+                    <label for="InputProjectSubmit">New project</label>
+                    <div class="input-group">
+                        <span class="input-group-addon" id="InputProjectName">Project name:</span>
+                        <input type="hidden" name="verb" value="create"/>
+                        <input type="text" class="form-control" id="InputProjectSubmit" name="name" aria-describedby="InputProjectName">
+                    </div>
+                </form>
+            </div>
+            <div class="panel-body">
+            {{#each projects}}
+                <dl>
+                    <dt>{{profile.name}}</dt>
+                    <dd>{{_id}}</dd>
+                    <dd>
+                        <a href="/editor/{{_id}}" class="btn btn-primary">Open</a>
+                    </dd>
+                    <dd>
+                        <form method="POST">
+                            <input type="hidden" name="verb" value="delete"/>
+                            <input type="hidden" name="id" value="{{_id}}"/>
+                            <button class="btn btn-warning">Delete</button>
+                        </form>
+                    </dd>
+                </dl>
+            {{/each}}
+            </div>
+        </div>
+
+    </div>
+</div>

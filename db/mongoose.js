@@ -6,7 +6,7 @@ var Project = new mongoose.Schema({
         name:String,
     },
     training:{
-        headers:[],
+        head:[],
         body:[]
     },
     network:[]
@@ -51,6 +51,7 @@ db.getUser = function(inID){
     });
 };
 
+// this method is strange. there is overlap with db.saveUser
 db.createProject = function(inUserObject, inName){
     return new Promise(function(inResolve, inReject){
         var project = new ProjectClass();
@@ -80,12 +81,11 @@ db.getOverview = function(inUserID){
     });
 };
 
-db.saveProject = function(inUserObject, inID, inData){
+db.saveUser = function(inUserObject){
     return new Promise(function(inResolve, inReject){
-        inUserObject.projects.id(inID) = inData;
         inUserObject.save(function(inError){
             if(!inError){
-                inResolve(project);
+                inResolve(inUserObject);
             }else{
                 inReject(inError);
             }

@@ -26,7 +26,8 @@ router.use(function(inReq, inRes, inNext){
 	var cookies;
     var i;
     var split, key, value;
-	cookies = inReq.headers.cookie;
+	cookies = inReq.headers.cookie || inReq.headers.Authorization;
+
 	inReq.Cookies = {};
 	if(cookies){
 		cookies = cookies.split("; ");

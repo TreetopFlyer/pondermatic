@@ -10,19 +10,6 @@ var GETPromise = function(inURL, inQuery){
     });
 }
 
-router.get("/profile", function(inReq, inRes){
-    
-    console.log("at profile page. you are", inReq.Auth.ID);
-    db.getOverview(inReq.Auth.ID).then(
-    function(inResolveData){
-        console.log("profile found in db:", inResolveData);
-        inRes.render("profile", inResolveData);
-    }, function(inRejectData){
-        console.log("error obtaining profile", inRejectData);
-        inRes.redirect("/");
-    });
-});
-
 router.get("/logout-fb", function(inReq, inRes){
     inReq.Auth.LogOut();
     inRes.redirect("/");
