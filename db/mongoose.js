@@ -80,4 +80,17 @@ db.getOverview = function(inUserID){
     });
 };
 
+db.saveProject = function(inUserObject, inID, inData){
+    return new Promise(function(inResolve, inReject){
+        inUserObject.projects.id(inID) = inData;
+        inUserObject.save(function(inError){
+            if(!inError){
+                inResolve(project);
+            }else{
+                inReject(inError);
+            }
+        });
+    });
+};
+
 module.exports = db;
