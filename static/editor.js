@@ -50,12 +50,11 @@ App.directive("importCsv", ["$parse", function(inParser){
                     contents.pop();
                     limit = contents.length-1;
                     if(limit > 100){
-                        
-                        alert(limit + " is too many rows. reducing to the first 100");
-                        
                         limit = 100;
+                        alert("limiting to the first 100 rows")
                     }
                     
+                    // build table headers
                     table = {};
                     table.head = contents[0].split(",");
                     var label;
@@ -70,9 +69,8 @@ App.directive("importCsv", ["$parse", function(inParser){
                         };
                     }
                     
-                    
+                    //build rows
                     table.body = [];
-
                     for(i=1; i<limit; i++){
                         row = {};
                         row.data = [];
@@ -87,15 +85,10 @@ App.directive("importCsv", ["$parse", function(inParser){
                         table.body.push(row);
                     }
                     
-                    
+                    // push into model
                     inScope.$apply(function(){
                         inParser(inAttributes.importCsv).assign(inScope, table);
-                        
-                        console.log(table);
-                        
-                    })
-                    
-                    
+                    });
                 };
                 parser.readAsText(inFile);
                 
@@ -137,11 +130,9 @@ App.factory("FactoryProject", [function(){
     }
 }]);
 
-/*
-App.config(["$httpProvider", function (inHTTP) {
-    inHTTP.defaults.withCredentials = true;
+App.config(["$interpolateProvider", function(inInterpolate){
+    inInterpolate.startSymbol('{[{').endSymbol('}]}');
 }]);
-*/
 
 App.controller("Controller", ["$scope", "$http", "FactoryProject", function(inScope, inHTTP, inFactoryProject){
     
@@ -160,15 +151,16 @@ App.controller("Controller", ["$scope", "$http", "FactoryProject", function(inSc
         console.log("download called");
         
         inHTTP({method:'GET', url:'/api/load/'+inScope.project._id, headers:{'Authorization':document.cookie}}).then(function(inData){
-            inScope.project = inData.data;
-            console.log("downloaded data", inData);
+            if(inData.data){
+                inScope.project = inData.data;
+                console.log("downloaded data", inData);
+            }
         }, function(inData){
             console.log("download ERROR", inData);
         });
     }
     
-    inScope.project = inFactoryProject;
+    inScope.project = {};
     
-    console.log("id is", inScope.project._id);
     
 }]);

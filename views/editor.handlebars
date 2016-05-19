@@ -1,8 +1,9 @@
-
 <style>
     *[data-import-csv]{
         padding:20px;
         border:1px dashed #aaa;
+        background:#ddd;
+        text-align:center;
     }
     *[data-import-csv].Import{
         background:#aaa;
@@ -14,7 +15,6 @@
         min-width:120px;
         margin:0;
         padding:0;
-        background:#ddd;
         overflow:hidden;
     }
     ul.Labels li{
@@ -25,50 +25,68 @@
         height:15px;
         margin:2px;
         border:1px solid #444;
+        border-radius:3px;
         background:none;
     }
     ul.Labels li.Active{
         background:#000;
     }
+    ul.Labels.Human li:hover{
+        background:#aaa;
+    }
 </style>
-
-<div class="container">
-    <div class="row" ng-app="Application" ng-controller="Controller">
-
-<div data-import-csv="project.training">drag CSV here to import</div>
-
-<form ng-submit="upload();">
-    <input type="hidden" name="id" value="{{_id}}" data-project-id="project._id"/>
-    <input ng-model="project.profile.name" type="text"/>
-    <button>upload current project</button>
-</form>
-
-<table>
-    <thead>
-        <th>Labels Human</th>
-        <th>Labels Machine</th>
-        <th ng-repeat="column in project.training.head track by $index">{{column.label}} {{$index}}</th>
-    </thead>
-    <tbody>
-        <tr ng-repeat="row in project.training.body track by $index">
-            <td>
-                <ul class="Labels Human">
-                    <li
-                    ng-repeat="label in row.label.human track by $index"
-                    ng-class="{'Active':row.label.human[$index] != false}"
-                    ng-click="row.label.human[$index] = !row.label.human[$index]"></li>
-                </ul>
-            </td>
-            <td>
-                <ul class="Labels Machine">
-                    <li ng-repeat="label in row.label.machine track by $index"></li>
-                </ul>
-            </td>
-            <td ng-repeat="cell in row.data track by $index">{{cell}}</td>
-        </tr>
-    </tbody>
-</table>
-        
+<div ng-app="Application" ng-controller="Controller">
+    <div class="container">
+        <div class="row">
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Project</h3>
+                </div>
+                <div class="panel-body" ng-show="project.training.body.length == 0">
+                    <div data-import-csv="project.training">drag CSV here to import</div>
+                </div>
+                <div class="panel-body">
+                    <form ng-submit="upload();">
+                        <div class="input-group">
+                            <input type="hidden" name="id" value="{{_id}}" data-project-id="project._id"/>
+                            <span class="input-group-addon">Project name:</span>
+                            <input class="form-control" ng-model="project.profile.name" type="text"/>
+                        </div>
+                        <br/>
+                        <button class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+    <table class="table table-hover table-condensed" ng-show="project.training.body.length > 0">
+        <thead>
+            <th>Labels Human</th>
+            <th>Labels Machine</th>
+            <th ng-repeat="column in project.training.head">
+                {[{column.label}]}
+            </th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="row in project.training.body track by $index">
+                <td>
+                    <ul class="Labels Human">
+                        <li
+                        ng-repeat="label in row.label.human track by $index"
+                        ng-class="{'Active':row.label.human[$index] != false}"
+                        ng-click="row.label.human[$index] = !row.label.human[$index]">
+                        </li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="Labels Machine">
+                        <li ng-repeat="label in row.label.machine track by $index"></li>
+                    </ul>
+                </td>
+                <td ng-repeat="cell in row.data track by $index">{[{cell}]}</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 <script src="/static/editor.js"></script>

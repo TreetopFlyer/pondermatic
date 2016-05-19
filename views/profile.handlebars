@@ -16,32 +16,40 @@
                 <h3 class="panel-title">Projects</h3>
             </div>
             <div class="panel-body">
-                <form method="POST">
-                    <label for="InputProjectSubmit">New project</label>
-                    <div class="input-group">
-                        <span class="input-group-addon" id="InputProjectName">Project name:</span>
-                        <input type="hidden" name="verb" value="create"/>
-                        <input type="text" class="form-control" id="InputProjectSubmit" name="name" aria-describedby="InputProjectName">
+                <div class="col-sm-6 col-md-4">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <p>
+                                <form method="POST">
+                                    <label for="InputProjectSubmit">New project</label>
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="InputProjectName">Project name:</span>
+                                        <input type="hidden" name="verb" value="create"/>
+                                        <input type="text" class="form-control" id="InputProjectSubmit" name="name" aria-describedby="InputProjectName">
+                                    </div>
+                                </form>
+                            </p>
+                        </div>
                     </div>
-                </form>
-            </div>
-            <div class="panel-body">
-            {{#each projects}}
-                <dl>
-                    <dt>{{profile.name}}</dt>
-                    <dd>{{_id}}</dd>
-                    <dd>
-                        <a href="/editor/{{_id}}" class="btn btn-primary">Open</a>
-                    </dd>
-                    <dd>
-                        <form method="POST">
-                            <input type="hidden" name="verb" value="delete"/>
-                            <input type="hidden" name="id" value="{{_id}}"/>
-                            <button class="btn btn-warning">Delete</button>
-                        </form>
-                    </dd>
-                </dl>
-            {{/each}}
+                </div>
+                {{#each projects}}
+                <div class="col-sm-6 col-md-4">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <h3>{{profile.name}}</h3>
+                            <p>
+                                
+                                <form method="POST">
+                                    <a href="/editor/{{_id}}" class="btn btn-primary">Open</a>
+                                    <input type="hidden" name="verb" value="delete"/>
+                                    <input type="hidden" name="id" value="{{_id}}"/>
+                                    <button class="btn btn-warning">Delete</button>
+                                </form>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
             </div>
         </div>
 
