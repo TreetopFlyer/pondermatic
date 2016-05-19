@@ -34,6 +34,23 @@
     ul.Labels.Human li:hover{
         background:#aaa;
     }
+
+    th dl{
+        margin-right:50px;
+    }
+    th dd{
+        border-bottom:1px solid #eee;
+        font-weight:normal;
+        font-size:10px;
+    }
+    td span{
+        display:block;
+    }
+    td span.Mapped{
+        font-style: italic;
+        color:#aaa;
+        font-size:10px;
+    } 
 </style>
 <div ng-app="Application" ng-controller="Controller">
     <div class="container">
@@ -65,7 +82,12 @@
             <th>Labels Human</th>
             <th>Labels Machine</th>
             <th ng-repeat="column in project.training.head">
-                {[{column.label}]}
+                <dl>
+                    <dd>min: <span>{[{column.min}]}</span></dd>
+                    <dd>max: <span>{[{column.max}]}</span></dd>
+                    <dd ng-repeat="unique in column.uniques track by $index">{[{unique}]}: <span>{[{$index}]}</span></dd>
+                    <dt>{[{column.label}]}</dt>
+                </dl>
             </th>
         </thead>
         <tbody>
@@ -84,7 +106,10 @@
                         <li ng-repeat="label in row.label.machine track by $index"></li>
                     </ul>
                 </td>
-                <td ng-repeat="cell in row.data track by $index">{[{cell}]}</td>
+                <td ng-repeat="cell in row.data track by $index">
+                    <span class="Original">{[{cell.original}]}</span>
+                    <span class="Mapped">{[{cell.mapped | number:4}]}</span>
+                </td>
             </tr>
         </tbody>
     </table>
