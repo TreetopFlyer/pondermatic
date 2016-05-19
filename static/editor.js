@@ -11,7 +11,7 @@ App.directive("projectId", ["$parse", function(inParser){
         }  
     };
 }])
-App.directive("importCsv", ["$parse", "FactoryProject", function(inParser, inProject){
+App.directive("importCsv", ["$parse", function(inParser){
 
     return{
         link : function(inScope, inElement, inAttributes){
@@ -128,8 +128,7 @@ App.directive("importCsv", ["$parse", "FactoryProject", function(inParser, inPro
 
                     // push into model
                     inScope.$apply(function(){
-                        
-                        inParser(inAttributes.importCsv).assign(inScope, table);
+                        inScope.project.training = table;
                     });
                 };
                 parser.readAsText(inFile);
@@ -149,34 +148,12 @@ App.directive("importCsv", ["$parse", "FactoryProject", function(inParser, inPro
     
 }]);
 
-App.factory("FactoryProject", [function(){
-    return {
-        _id:"default",
-        profile:{
-            name:""
-        },
-        training:{
-            head:[{
-                active:true,
-                label:"column header one",
-                min:0,
-                max:10,
-                map:{}
-            }],
-            body:[{
-                data:[{original:0.123, mapped:1}],
-                label:{human:[0, 0, 0], machine:[0, 0, 0]}
-            }]
-        },
-        network:[]
-    }
-}]);
-
 App.config(["$interpolateProvider", function(inInterpolate){
     inInterpolate.startSymbol('{[{').endSymbol('}]}');
 }]);
 
-App.controller("Controller", ["$scope", "$http", "FactoryProject", function(inScope, inHTTP, inFactoryProject){
+
+App.controller("Controller", ["$scope", "$http", function(inScope, inHTTP){
     
     inScope.upload = function(){
         inHTTP({method:'POST', url:'/api/save', headers:{'Authorization':document.cookie}, data:inScope.project}).then(function(){
@@ -197,6 +174,7 @@ App.controller("Controller", ["$scope", "$http", "FactoryProject", function(inSc
     }
     
     inScope.project = {};
+    
     
     
 }]);
