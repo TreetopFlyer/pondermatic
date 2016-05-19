@@ -8,20 +8,22 @@ function error(inM){
   var i, j;
   for(i=0; i<inM.length; i++){
     for(j=0; j<inM[i].length; j++){
-      sum += inM[i][j];
+      sum += Math.abs(inM[i][j]);
     }
   }
   return sum;
 }
 
 self.addEventListener('message', function(e) {
-  var nn = e.data.network
-  var ts = e.data.training
-  
+  var nn = e.data.network;
+  var ts = e.data.training;
+  var it = e.data.iterations;
   var i;
-  for(i=0; i<e.data.iterations; i+=10){
-    NN.Network.Batch(nn, ts, 10);
-    self.postMessage({type:"progress", iteration:(i+10), error:error(nn.Error)});
+  var stride = 5;
+  
+  for(i=0; i<it; i+=stride){
+    NN.Network.Batch(nn, ts, stride);
+    self.postMessage({type:"progress", iteration:(i+stride), error:error(nn.Error)});
   }
   self.postMessage({type:"done", network:nn});
   
