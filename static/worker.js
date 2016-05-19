@@ -19,7 +19,7 @@ self.addEventListener('message', function(e) {
   var ts = e.data.training;
   var it = e.data.iterations;
   var i;
-  var stride = 5;
+  var stride = 10;
   
   for(i=0; i<it; i+=stride){
     NN.Network.Batch(nn, ts, stride);

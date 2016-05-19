@@ -34,6 +34,17 @@
     ul.Labels.Human li:hover{
         background:#aaa;
     }
+    ul.Labels.Machine span{
+        display:block;
+        position:absolute;
+        top:0px;
+        left:0px;
+        width:100%;
+        height:100%;
+        
+        background: #000;
+        opacity:0;
+    }
 
     th dl{
         margin-right:50px;
@@ -75,11 +86,21 @@
                     </form>
                 </div>
             </div>
+            
+            <div class="panel panel-default" ng-show="project.training.body.length != 0">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Training</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-primary" ng-click="prepare()">prepare</button>
+                    <button class="btn btn-primary" ng-click="train()">train</button>
+                </div>
+            </div>
+            
         </div>
     </div>
     
-    <button class="btn btn-primary" ng-click="prepare()">prepare</button>
-    <button class="btn btn-primary" ng-click="train()">train</button>
+
     
     <table class="table table-hover table-condensed" ng-show="project.training.body.length > 0">
         <thead>
@@ -107,7 +128,9 @@
                 </td>
                 <td>
                     <ul class="Labels Machine">
-                        <li ng-repeat="label in row.label.machine track by $index"></li>
+                        <li ng-repeat="label in row.label.machine track by $index">
+                            <span style="opacity:{[{label}]};"></span>
+                        </li>
                     </ul>
                 </td>
                 <td ng-repeat="cell in row.data track by $index">

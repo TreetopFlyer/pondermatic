@@ -96,7 +96,6 @@ App.directive("importCsv", ["$parse", function(inParser){
                                 }
                                 
                                 cell.mapped = column.map[cell.original];
-                                
                             }
                             
                             if(column.min > cell.mapped)
@@ -127,7 +126,9 @@ App.directive("importCsv", ["$parse", function(inParser){
                     // push into model
                     inScope.$apply(function(){
                         inScope.project.training = table;
-                    });
+                    })
+                    
+
                 };
                 parser.readAsText(inFile);
                 
@@ -172,7 +173,7 @@ App.controller("Controller", ["$scope", "$http", function(inScope, inHTTP){
     }
     
     inScope.project = {};
-    
+    inScope.neuralNetwork = {};
     inScope.trainingSet = {};
     inScope.prepare = function(){
         var ts;
@@ -181,9 +182,9 @@ App.controller("Controller", ["$scope", "$http", function(inScope, inHTTP){
         var label, data, sum;
         var job;
         
-        inScope.project.network = NN.Network.Create(inScope.project.training.head.length, 300, 20, 4);
+        inScope.neuralNetwork = NN.Network.Create(inScope.project.training.head.length, 300, 20, 4);
         
-        ts = NN.TrainingSet.Create();
+        inScope.trainingSet = NN.TrainingSet.Create();
         for(i=0; i<inScope.project.training.body.length; i++){
             row = inScope.project.training.body[i];
             
@@ -201,16 +202,16 @@ App.controller("Controller", ["$scope", "$http", function(inScope, inHTTP){
                 data.push(parseFloat(row.data[j].mapped) || 0);
             }
             
-            NN.TrainingSet.AddPoint(ts, label, data);
+            NN.TrainingSet.AddPoint(inScope.trainingSet, label, data);
         }
         
-        inScope.trainingSet = ts;
-        console.log("prepare complete");
+        
+        
+        console.log("prepare complete", inScope);
     };
     
     inScope.train = function(){
-        
-        
+
         var worker = new Worker('/static/worker.js');
         worker.addEventListener('message', function(e) {
             switch(e.data.type){
@@ -219,18 +220,41 @@ App.controller("Controller", ["$scope", "$http", function(inScope, inHTTP){
                     break;
                 case "done":
                     console.log("network:", e.data.network);
-                    inScope.project.network = e.data.network;
+                    inScope.neuralNetwork = e.data.network;
+                    inScope.observe();
                     break;
             }
         }, false);
         
         worker.postMessage({
-            network: inScope.project.network,
+            network: inScope.neuralNetwork,
             training: inScope.trainingSet,
-            iterations: 50
+            iterations: 500
         });
-        
-        console.log("training started");
     };
+    
+    inScope.observe = function(){
+        var i, j;
+        var body = inScope.project.training.body;
+        var row;
+        var batch;
+        var observations;
+        
+        batch = [];
+        for(i=0; i<body.length; i++){
+            row = [];
+            for(j=0; j<body[i].data.length; j++){
+                row.push(parseFloat(body[i].data[j].mapped) || 0);
+            }
+            batch.push(row);
+        }
+        
+        observations = NN.Network.Observe(inScope.neuralNetwork, batch);
+        
+        for(i=0; i<body.length; i++){
+            body[i].label.machine = observations[i];
+        }
+        inScope.$apply();
+    }
     
 }]);
