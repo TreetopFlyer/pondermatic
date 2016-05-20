@@ -15,6 +15,7 @@ function error(inM){
 }
 
 self.addEventListener('message', function(e) {
+
   var nn = e.data.network;
   var ts = e.data.training;
   var it = e.data.iterations;
@@ -26,6 +27,5 @@ self.addEventListener('message', function(e) {
     self.postMessage({type:"progress", iteration:(i+stride), error:error(nn.Error)});
   }
   self.postMessage({type:"done", network:nn});
-  
   
 }, false);

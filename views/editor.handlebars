@@ -91,8 +91,17 @@
                     <h3 class="panel-title">Training</h3>
                 </div>
                 <div class="panel-body">
-                    <button class="btn btn-primary" ng-click="saveFile.methods.prep()">prepare</button>
-                    <button class="btn btn-primary" ng-click="train()">train</button>
+                    <button class="btn btn-primary" ng-click="webWorker.methods.start()">train</button>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Debug</h3>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-primary" ng-click="traceState()">SaveFile.State</button>
+                    <button class="btn btn-primary" ng-click="traceWorker()">WebWorker.Job</button>
                 </div>
             </div>
             
@@ -119,7 +128,7 @@
                     <ul class="Labels Human">
                         <li ng-repeat="label in saveFile.state.labels[parentIndex].human track by $index"
                             ng-class="{'Active':label != false}"
-                            ng-click="label = !label">
+                            ng-click="clickLabel(parentIndex, $index);">
                         </li>
                     </ul>
                     
