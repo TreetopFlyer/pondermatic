@@ -131,6 +131,7 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
             });
         }
         
+        /*
         function MxN(inIn, inOut){
             var min = [];
             var max = [];
@@ -144,10 +145,18 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
             }
             return M.Box([min, max], inOut);
         }
+        
         saveFile.state.matricies = [];
         saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 500));
         saveFile.state.matricies.push(MxN(500, 20));
         saveFile.state.matricies.push(MxN(20, saveFile.state.labels[0].machine.length));
+        */
+        
+        var temp = NN.Network.Create(saveFile.state.headers.length, 300, 20, saveFile.state.labels[0].human.length);
+        saveFile.state.matricies = [];
+        saveFile.state.matricies.push(temp.Layers[0].Forward.Matrix);
+        saveFile.state.matricies.push(temp.Layers[1].Forward.Matrix);
+        saveFile.state.matricies.push(temp.Layers[2].Forward.Matrix);
     };
     
     //push saveFile.state up to mongo
@@ -200,17 +209,26 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
     worker.methods = {};
     worker.methods.prep = function(){
         var i, j;
-        var row, data;
+        var row, label, data, sum;
         
         worker.job.training = NN.TrainingSet.Create();
         for(i=0; i<inFactorySaveFile.state.labels.length; i++){
             row = inFactorySaveFile.state.data[i];
+            label = inFactorySaveFile.state.labels[i].human;
             data = [];
+            sum = 0;
+            for(j=0; j<label.length; j++){
+                sum += label[j];
+            }
+            if(sum == 0){
+                continue;
+            }
+            
             for(j=0; j<row.length; j++){
                 column = inFactorySaveFile.state.headers[j];
                 data[j] = ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0;
             }
-            NN.TrainingSet.AddPoint(worker.job.training, inFactorySaveFile.state.labels[i].human, data);
+            NN.TrainingSet.AddPoint(worker.job.training, label, data);
         }
         
         worker.job.network = NN.Network.Create(1, 1, 1, 1);
