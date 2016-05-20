@@ -64,22 +64,21 @@
     } 
 </style>
 <div ng-app="Application" ng-controller="Controller">
-    <div class="container">
+    <div class="container" data-project-id="{{_id}}">
         <div class="row">
             
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Project</h3>
                 </div>
-                <div class="panel-body" ng-show="project.training.body.length == 0">
+                <div class="panel-body">
                     <div data-import-csv>drag CSV here to import</div>
                 </div>
                 <div class="panel-body">
-                    <form ng-submit="upload();">
+                    <form ng-submit="saveFile.methods.save();">
                         <div class="input-group">
-                            <input type="hidden" name="id" value="{{_id}}" data-project-id="project._id"/>
                             <span class="input-group-addon">Project name:</span>
-                            <input class="form-control" ng-model="project.profile.name" type="text"/>
+                            <input class="form-control" ng-model="saveFile.state.profile.name" type="text"/>
                         </div>
                         <br/>
                         <button class="btn btn-primary">Save</button>
@@ -87,12 +86,12 @@
                 </div>
             </div>
             
-            <div class="panel panel-default" ng-show="project.training.body.length != 0">
+            <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Training</h3>
                 </div>
                 <div class="panel-body">
-                    <button class="btn btn-primary" ng-click="prepare()">prepare</button>
+                    <button class="btn btn-primary" ng-click="saveFile.methods.prep()">prepare</button>
                     <button class="btn btn-primary" ng-click="train()">train</button>
                 </div>
             </div>
@@ -102,11 +101,10 @@
     
 
     
-    <table class="table table-hover table-condensed" ng-show="project.training.body.length > 0">
+    <table class="table table-hover table-condensed">
         <thead>
-            <th>Labels Human</th>
-            <th>Labels Machine</th>
-            <th ng-repeat="column in project.training.head">
+            <th>Labels</th>
+            <th ng-repeat="column in saveFile.state.headers">
                 <dl>
                     <dd>min: <span>{[{column.min}]}</span></dd>
                     <dd>max: <span>{[{column.max}]}</span></dd>
@@ -116,26 +114,24 @@
             </th>
         </thead>
         <tbody>
-            <tr ng-repeat="row in project.training.body track by $index">
+            <tr ng-repeat="row in saveFile.state.data" ng-init="parentIndex = $index">
                 <td>
                     <ul class="Labels Human">
-                        <li
-                        ng-repeat="label in row.label.human track by $index"
-                        ng-class="{'Active':row.label.human[$index] != false}"
-                        ng-click="row.label.human[$index] = !row.label.human[$index]">
+                        <li ng-repeat="label in saveFile.state.labels[parentIndex].human track by $index"
+                            ng-class="{'Active':label != false}"
+                            ng-click="label = !label">
                         </li>
                     </ul>
-                </td>
-                <td>
+                    
                     <ul class="Labels Machine">
-                        <li ng-repeat="label in row.label.machine track by $index">
+                        <li ng-repeat="label in saveFile.state.labels[parentIndex].machine track by $index">
                             <span style="opacity:{[{label}]};"></span>
                         </li>
                     </ul>
+
                 </td>
-                <td ng-repeat="cell in row.data track by $index">
-                    <span class="Original">{[{cell.original}]}</span>
-                    <span class="Mapped">{[{cell.mapped | number:4}]}</span>
+                <td ng-repeat="cell in row track by $index">
+                    <span class="Original">{[{cell}]}</span>
                 </td>
             </tr>
         </tbody>

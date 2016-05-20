@@ -14,8 +14,15 @@ server = express();
 server.engine('handlebars', handlebars({defaultLayout:'main'}));
 server.set('view engine', 'handlebars');
 
-server.use(bodyParser.json());
+server.use(bodyParser.json({limit:"50mb"}));
 server.use(bodyParser.urlencoded({extended: true}));
+
+
+/*
+server.use( bodyParser.json({limit:1024*1024*20}) );
+server.use( bodyParser.urlencoded({ extended:true,limit:1024*1024*20,type:'application/x-www-form-urlencoding' }) );
+*/
+
 server.use("/static", express.static(__dirname+"/static"));
 server.use("/", authentication);
 server.use("/", login);

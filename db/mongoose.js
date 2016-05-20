@@ -5,11 +5,10 @@ var Project = new mongoose.Schema({
     profile:{
         name:String,
     },
-    training:{
-        head:[],
-        body:[]
-    },
-    network:[]
+    headers:[],
+    data:[],
+    labels:[],
+    matricies:[]
 });
 
 var User = new mongoose.Schema({
