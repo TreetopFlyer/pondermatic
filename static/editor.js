@@ -51,6 +51,15 @@ App.directive("importCsv", ["$parse", "FactorySaveFile", function(inParser, inSa
     };
 }]);
 
+App.factory("FactoryTraining", [function(){
+    var training = {};
+    
+    training.iterations = 0;
+    training.error = 0;
+    
+    return training;
+}]);
+
 App.factory("FactorySaveFile", ["$http", function(inHTTP){
     var saveFile = {};
     
@@ -131,6 +140,11 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
             });
         }
         
+        saveFile.methods.rebuildNetwork();
+        saveFile.methods.trainingReset();
+    };
+    
+    saveFile.methods.rebuildNetwork = function(){
         function MxN(inIn, inOut){
             var min = [];
             var max = [];
@@ -149,7 +163,6 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 500));
         saveFile.state.matricies.push(MxN(500, 20));
         saveFile.state.matricies.push(MxN(20, saveFile.state.labels[0].machine.length));
-        
     };
     
     //push saveFile.state up to mongo
@@ -190,8 +203,21 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         headers:{},
         data:{},
         labels:{},
-        matricies:{}
+        matricies:{},
+        training:{}
     };
+    
+    saveFile.methods.trainingUpdate = function(inIncrement, inError){
+        console.log("increment", inIncrement, saveFile.state.training.iterations);
+        saveFile.state.training.iterations += inIncrement;
+        saveFile.state.training.error = inError;
+    }
+    saveFile.methods.trainingReset = function(){
+        saveFile.state.training = {};
+        saveFile.state.training.iterations = 0;
+        saveFile.state.training.error = 0;
+    }
+    saveFile.methods.trainingReset();
     
     return saveFile;
 }]);
@@ -294,11 +320,16 @@ App.controller("Controller", ["$scope", "FactorySaveFile", "FactoryWebWorker", f
     inScope.clickLabel = function(i, j){
         inScope.saveFile.state.labels[i].human[j] = ! inScope.saveFile.state.labels[i].human[j];
     };
+    inScope.clickReset = function(){
+        inScope.saveFile.methods.rebuildNetwork();
+        inScope.saveFile.methods.trainingReset();
+    }
     inScope.handlerUpdate = function(inEvent){
+        inScope.saveFile.methods.trainingUpdate(inEvent.stride, inEvent.error);
+        inScope.$apply();
         console.log("update", inEvent);
     };
     inScope.handlerDone = function(inEvent){
-        console.log(inScope.saveFile.state.labels);
         console.log("done", inEvent);
         inScope.$apply();
     };

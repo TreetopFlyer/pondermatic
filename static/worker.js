@@ -24,7 +24,7 @@ self.addEventListener('message', function(e) {
   
   for(i=0; i<it; i+=stride){
     NN.Network.Batch(nn, ts, stride);
-    self.postMessage({type:"progress", iteration:(i+stride), error:error(nn.Error)});
+    self.postMessage({type:"progress", iteration:(i+stride), stride:stride, error:error(nn.Error)});
   }
   self.postMessage({type:"done", network:nn});
   
