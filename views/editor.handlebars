@@ -11,11 +11,11 @@
         border:1px dashed #fff;
     }
     ul.Labels{
-        float:left;
-        min-width:120px;
+        width:90px;
         margin:0;
-        padding:0;
+        padding:5px;
         overflow:hidden;
+        background:#333;
     }
     ul.Labels li{
         display:block;
@@ -23,20 +23,18 @@
         float:left;
         width:15px;
         height:15px;
-        margin:2px;
+        margin:2px 1px 2px 0;
         border:1px solid #444;
-        border-radius:3px;
+        border-radius:5px;
         background:none;
+        overflow:hidden;
+        box-shadow:0px 1px 3px #000;
     }
     ul.Labels li.Active{
         background:#000;
     }
     ul.Labels.Human li:hover{
         background:#aaa;
-    }
-    ul.Labels.Machine{
-        position:relative;
-        top:-3px;
     }
     ul.Labels.Machine span{
         display:block;
@@ -49,7 +47,50 @@
         background: #000;
         opacity:0;
     }
+    ul.Labels.Machine li{
+        border:none;
+    }
 
+    ul.Labels li:nth-child(5n+1){
+        border-color:#0f0;
+    }
+    ul.Labels li:nth-child(5n+1).Active,
+    ul.Labels li:nth-child(5n+1) span{
+        background:#0f0;
+    }
+    
+    ul.Labels li:nth-child(5n+2){
+        border-color:#3af;
+    }
+    ul.Labels li:nth-child(5n+2).Active,
+    ul.Labels li:nth-child(5n+2) span{
+        background:#3af;
+    }
+    
+    ul.Labels li:nth-child(5n+3){
+        border-color:#fa0;
+    }
+    ul.Labels li:nth-child(5n+3).Active,
+    ul.Labels li:nth-child(5n+3) span{
+        background:#fa0;
+    }
+    
+    ul.Labels li:nth-child(5n+4){
+        border-color:#fff;
+    }
+    ul.Labels li:nth-child(5n+4).Active,
+    ul.Labels li:nth-child(5n+4) span{
+        background:#fff;
+    }
+
+    ul.Labels li:nth-child(5n+0){
+        border-color:#f00;
+    }
+    ul.Labels li:nth-child(5n+0).Active,
+    ul.Labels li:nth-child(5n+0) span{
+        background:#f00;
+    }
+    
     th dl{
         margin-right:50px;
     }
@@ -71,41 +112,37 @@
     <div class="container" data-project-id="{{_id}}">
         <div class="row">
             
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Project</h3>
-                </div>
-                <div class="panel-body">
-                    <div data-import-csv>drag CSV here to import</div>
-                </div>
-                <div class="panel-body">
-                    <form ng-submit="saveFile.methods.save();">
-                        <div class="input-group">
-                            <span class="input-group-addon">Project name:</span>
-                            <input class="form-control" ng-model="saveFile.state.profile.name" type="text"/>
-                        </div>
-                        <br/>
-                        <button class="btn btn-primary">Save</button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Training</h3>
-                </div>
-                <div class="panel-body">
-                    <button class="btn btn-primary" ng-click="webWorker.methods.start()">train</button>
+            <div class=col-md-4>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Project</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form ng-submit="saveFile.methods.save();">
+                            <div class="input-group">
+                                <span class="input-group-addon">Project name:</span>
+                                <input class="form-control" ng-model="saveFile.state.profile.name" type="text"/>
+                            </div>
+                            <br/>
+                            <div data-import-csv>drag CSV here to import</div>
+                            <br/>
+                            <button class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+                    <div class="panel-body">
+                        
+                    </div>
                 </div>
             </div>
             
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Debug</h3>
-                </div>
-                <div class="panel-body">
-                    <button class="btn btn-primary" ng-click="traceState()">SaveFile.State</button>
-                    <button class="btn btn-primary" ng-click="traceWorker()">WebWorker.Job</button>
+            <div class=col-md-4>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Training</h3>
+                    </div>
+                    <div class="panel-body">
+                        <button class="btn btn-primary" ng-click="webWorker.methods.start()">train</button>
+                    </div>
                 </div>
             </div>
             
@@ -113,17 +150,24 @@
     </div>
     
 
-    
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+        
     <table class="table table-hover table-condensed">
         <thead>
             <th>Labels</th>
+            <th>Observation</th>
             <th ng-repeat="column in saveFile.state.headers">
+                <span>{[{column.label}]}</span>
+                <!--
                 <dl>
                     <dd>min: <span>{[{column.min}]}</span></dd>
                     <dd>max: <span>{[{column.max}]}</span></dd>
                     <dd ng-repeat="unique in column.uniques track by $index">{[{unique}]}: <span>{[{$index}]}</span></dd>
                     <dt>{[{column.label}]}</dt>
                 </dl>
+                -->
             </th>
         </thead>
         <tbody>
@@ -135,19 +179,21 @@
                             ng-click="clickLabel(parentIndex, $index);">
                         </li>
                     </ul>
-                    
+                </td>
+                <td>
                     <ul class="Labels Machine">
                         <li ng-repeat="label in saveFile.state.labels[parentIndex].machine track by $index">
                             <span style="opacity:{[{label}]};"></span>
                         </li>
                     </ul>
-
                 </td>
-                <td ng-repeat="cell in row track by $index">
-                    <span class="Original">{[{cell}]}</span>
-                </td>
+                <td ng-repeat="cell in row track by $index">{[{cell}]}</td>
             </tr>
         </tbody>
     </table>
+        </div>
+    </div>
+</div>
+
 </div>
 <script src="/static/editor.js"></script>

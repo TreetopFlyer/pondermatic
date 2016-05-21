@@ -66,7 +66,7 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         var column;
         var cell;
         
-        contents = inCSV.split("\n");
+        contents = inCSV.split("\r");
         contents.pop();
         
         limit = contents.length-1;
@@ -131,7 +131,6 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
             });
         }
         
-        /*
         function MxN(inIn, inOut){
             var min = [];
             var max = [];
@@ -150,13 +149,7 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 500));
         saveFile.state.matricies.push(MxN(500, 20));
         saveFile.state.matricies.push(MxN(20, saveFile.state.labels[0].machine.length));
-        */
         
-        var temp = NN.Network.Create(saveFile.state.headers.length, 300, 20, saveFile.state.labels[0].human.length);
-        saveFile.state.matricies = [];
-        saveFile.state.matricies.push(temp.Layers[0].Forward.Matrix);
-        saveFile.state.matricies.push(temp.Layers[1].Forward.Matrix);
-        saveFile.state.matricies.push(temp.Layers[2].Forward.Matrix);
     };
     
     //push saveFile.state up to mongo
@@ -178,6 +171,17 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
     saveFile.methods.init = function(inID){
         saveFile.state._id = inID;
         saveFile.methods.load();
+    }
+    
+    saveFile.methods.getMappedRow = function(inIndex){
+        var j;
+        var row = saveFile.state.data[inIndex];
+        var mapped = [];
+        for(j=0; j<row.length; j++){
+            column = saveFile.state.headers[j];
+            mapped[j] = ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0;
+        }
+        return mapped;
     }
     
     saveFile.state = {
@@ -215,7 +219,7 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
         for(i=0; i<inFactorySaveFile.state.labels.length; i++){
             row = inFactorySaveFile.state.data[i];
             label = inFactorySaveFile.state.labels[i].human;
-            data = [];
+            data;
             sum = 0;
             for(j=0; j<label.length; j++){
                 sum += label[j];
@@ -223,12 +227,8 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
             if(sum == 0){
                 continue;
             }
-            
-            for(j=0; j<row.length; j++){
-                column = inFactorySaveFile.state.headers[j];
-                data[j] = ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0;
-            }
-            NN.TrainingSet.AddPoint(worker.job.training, label, data);
+
+            NN.TrainingSet.AddPoint(worker.job.training, label, inFactorySaveFile.methods.getMappedRow(i));
         }
         
         worker.job.network = NN.Network.Create(1, 1, 1, 1);
@@ -241,16 +241,17 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
     };
     worker.methods.done = function(inNetwork){
         var i;
-        var output;
-        
-        output = inNetwork.Layers[inNetwork.Layers.length-1].Forward.StageSigmoid
-        for(i=0; i<output.length; i++){
-            inFactorySaveFile.state.labels[i].machine = output[i];
-        } 
+        var input, output;
         
         inFactorySaveFile.state.matricies = [];
         for(i=0; i<inNetwork.Layers.length; i++){
             inFactorySaveFile.state.matricies[i] = inNetwork.Layers[i].Forward.Matrix;
+        }
+        
+        for(i=0; i<inFactorySaveFile.state.data.length; i++){
+            input = inFactorySaveFile.methods.getMappedRow(i);
+            output = NN.Network.Observe(inNetwork, [input])[0];
+            inFactorySaveFile.state.labels[i].machine = output;
         }
     };
     
