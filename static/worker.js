@@ -22,6 +22,7 @@ self.addEventListener('message', function(e) {
   var i;
   var stride = 10;
   
+  nn.LearningRate = 0.1;
   for(i=0; i<it; i+=stride){
     NN.Network.Batch(nn, ts, stride);
     self.postMessage({type:"progress", iteration:(i+stride), stride:stride, error:error(nn.Error)});

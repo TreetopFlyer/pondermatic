@@ -160,9 +160,10 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         }
         
         saveFile.state.matricies = [];
-        saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 500));
-        saveFile.state.matricies.push(MxN(500, 20));
-        saveFile.state.matricies.push(MxN(20, saveFile.state.labels[0].machine.length));
+        saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 100));
+        saveFile.state.matricies.push(MxN(100, 50));
+        saveFile.state.matricies.push(MxN(50, 10));
+        saveFile.state.matricies.push(MxN(10, saveFile.state.labels[0].machine.length));
     };
     
     //push saveFile.state up to mongo
@@ -208,7 +209,6 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
     };
     
     saveFile.methods.trainingUpdate = function(inIncrement, inError){
-        console.log("increment", inIncrement, saveFile.state.training.iterations);
         saveFile.state.training.iterations += inIncrement;
         saveFile.state.training.error = inError;
     }
@@ -257,7 +257,7 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
             NN.TrainingSet.AddPoint(worker.job.training, label, inFactorySaveFile.methods.getMappedRow(i));
         }
         
-        worker.job.network = NN.Network.Create(1, 1, 1, 1);
+        worker.job.network = NN.Network.Create(1, 1, 1, 1, 1);
         for(i=0; i<inFactorySaveFile.state.matricies.length; i++){
             worker.job.network.Layers[i].Forward.Matrix = inFactorySaveFile.state.matricies[i];
             worker.job.network.Layers[i].Backward.Matrix = M.Transpose(inFactorySaveFile.state.matricies[i]);
