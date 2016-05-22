@@ -1,14 +1,14 @@
 <style>
     *[data-import-csv]{
-        padding:20px;
-        border:1px dashed #aaa;
+        padding:5px;
+        border:3px dashed #aaa;
         background:#ddd;
         text-align:center;
     }
     *[data-import-csv].Import{
         background:#aaa;
         color:#fff;
-        border:1px dashed #fff;
+        border:3px dashed #fff;
     }
     ul.Labels{
         width:90px;
@@ -92,12 +92,24 @@
     }
     
     th dl{
-        margin-right:50px;
+        margin-right:10px;
     }
     th dd{
         border-bottom:1px solid #eee;
         font-weight:normal;
         font-size:10px;
+    }
+    th input{
+        width:100%;
+        min-width:50px;
+        
+        margin:0;
+        padding:5px;
+        border:none;
+        color:#333;
+    }
+    th button{
+        margin-bottom:8px !important;
     }
     td span{
         display:block;
@@ -106,13 +118,17 @@
         font-style: italic;
         color:#aaa;
         font-size:10px;
-    } 
+    }
+    th.disabled, td.disabled{
+        background:#0a0a0a;
+        color:#666;
+    }
 </style>
 <div ng-app="Application" ng-controller="Controller">
     <div class="container" data-project-id="{{_id}}">
         <div class="row">
             
-            <div class=col-md-4>
+            <div class=col-md-5>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Project</h3>
@@ -120,11 +136,14 @@
                     <div class="panel-body">
                         <form ng-submit="saveFile.methods.save();">
                             <div class="input-group">
-                                <span class="input-group-addon">Project name:</span>
+                                <span class="input-group-addon">Name:</span>
                                 <input class="form-control" ng-model="saveFile.state.profile.name" type="text"/>
                             </div>
                             <br/>
-                            <div data-import-csv>drag CSV here to import</div>
+                            <div class="input-group">
+                                <p>Drop CSV file here or click to browse:</p>
+                                <input type="file" data-import-csv class="form-control" />
+                            </div>
                             <br/>
                             <button class="btn btn-primary">
                                 Save Project
@@ -138,7 +157,7 @@
                 </div>
             </div>
             
-            <div class=col-md-4>
+            <div class=col-md-5>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Training</h3>
@@ -163,14 +182,16 @@
                 </div>
             </div>
             
-            <div class=col-md-4>
+            <div class=col-md-2>
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">debug</h3>
+                        <h3 class="panel-title">Debug Trace</h3>
                     </div>
                     <div class="panel-body">
-                        <button class="btn btn-primary" ng-click="traceState()">SaveFile.State</button>
-                        <button class="btn btn-primary" ng-click="traceWorker()">WebWorker.Job</button>
+                        <button class="btn btn-primary btn-xs" ng-click="traceState()">SaveFile.State</button>
+                    </div>
+                    <div class="panel-body">
+                        <button class="btn btn-primary btn-xs" ng-click="traceWorker()">WebWorker.Job</button>
                     </div>
                 </div>
             </div>
@@ -185,18 +206,32 @@
         
     <table class="table table-hover table-condensed">
         <thead>
-            <th>Labels</th>
-            <th>Observation</th>
-            <th ng-repeat="column in saveFile.state.headers">
-                <span>{[{column.label}]}</span>
-
-                <dl>
+            <th>Human Labels</th>
+            <th>Machine Labels</th>
+            <th ng-repeat="column in saveFile.state.headers" ng-class="{'disabled':!column.active}">
+                <button ng-show="column.active" ng-click="column.active = false" class="btn btn-primary btn-sm">
+                    <span>
+                        <span class="glyphicon glyphicon-eye-close"></span>
+                        <span>Ignore</span>
+                    </span>
+                </button>
+                <button ng-hide="column.active" ng-click="column.active = true" class="btn btn-default btn-sm">
+                    <span>
+                        <span class="glyphicon glyphicon-eye-open"></span>
+                        <span>Include</span>
+                    </span>
+                </button>
+                
+                <!--
+                <dl ng-show="column.active">
                     <dd>min: <span>{[{column.min}]}</span></dd>
                     <dd>max: <span>{[{column.max}]}</span></dd>
                     <dd ng-repeat="unique in column.uniques track by $index">{[{unique}]}: <span>{[{$index}]}</span></dd>
-                    <dt>{[{column.label}]}</dt>
+                    <dt></dt>
                 </dl>
-
+                -->
+                <strong ng-hide="column.active" style="display:block; padding:5px; color:#aaa;" ng-bind="column.label"></strong>
+                <input ng-show="column.active" type="text" ng-model="column.label">
             </th>
         </thead>
         <tbody>
@@ -216,7 +251,7 @@
                         </li>
                     </ul>
                 </td>
-                <td ng-repeat="cell in row track by $index">{[{cell}]}</td>
+                <td ng-repeat="cell in row track by $index" ng-class="{'disabled':!saveFile.state.headers[$index].active}">{[{cell}]}</td>
             </tr>
         </tbody>
     </table>

@@ -4,6 +4,12 @@ var db = require('../db/mongoose.js');
 
 
 router.get("/", function(inReq, inRes){
+    
+    if(!inReq.Auth.LoggedIn){
+        inRes.redirect("/login-fb");
+        return;
+    }
+    
     db.getOverview(inReq.Auth.ID).then(
     function(inResolveData){
         console.log("profile found in db:", inResolveData);

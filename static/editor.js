@@ -12,46 +12,62 @@ App.directive("projectId", ["$parse", "FactorySaveFile", function(inParser, inFa
 }]);
 App.directive("importCsv", ["$parse", "FactorySaveFile", function(inParser, inSaveFile){
 
-    return{
-        link : function(inScope, inElement, inAttributes){
+    var directive = {};
 
-            function handlerEnter(inEvent){
-                if(inEvent){
-                    inEvent.preventDefault();
-                }
-                inElement.addClass("Import");
-                inEvent.dataTransfer.effectAllowed = 'copy';
-                return false;
+    directive.link = function(inScope, inElement, inAttributes){
+
+        function handlerEnter(inEvent){
+            if(inEvent){
+                inEvent.preventDefault();
             }
-            
-            function handlerDrop(inEvent){
-                inElement.removeClass("Import");
-                if(inEvent){
-                    inEvent.preventDefault();
-                }
-                parse(event.dataTransfer.files[0]);
-                return false;
-            }
-            
-            function parse(inFile){
-                var parser = new FileReader();
-                parser.onload = function(inEvent){
-                    inSaveFile.methods.parse(inEvent.target.result);
-                    inScope.$apply();
-                };
-                parser.readAsText(inFile);
-            }
-            
-            function handlerLeave(){
-                inElement.removeClass("Import");
-            }
-            
-            inElement.on("dragenter dragstart dragend dragleave dragover drag drop", function (inEvent) {inEvent.preventDefault();});
-            inElement.on('dragenter', handlerEnter);
-            inElement.on('dragleave', handlerLeave);
-            inElement.on('drop', handlerDrop);
+            inElement.addClass("Import");
+            inEvent.dataTransfer.effectAllowed = 'copy';
+            return false;
         }
+        
+        function handlerDrop(inEvent){
+            inElement.removeClass("Import");
+            if(inEvent){
+                inEvent.preventDefault();
+            }
+            parse(event.dataTransfer.files[0]);
+            return false;
+        }
+        
+        function handlerChange(inEvent){
+            inEvent.stopImmediatePropagation();
+            parse(inEvent.target.files[0]);
+        };
+        
+        function parse(inFile){
+            
+            var parser = new FileReader();
+            parser.onload = function(inEvent){
+                inSaveFile.methods.parse(inEvent.target.result);
+                inScope.$apply();
+            };
+            parser.readAsText(inFile);
+        }
+        
+        function handlerLeave(){
+            inElement.removeClass("Import");
+        }
+        
+        
+        
+        inElement.on("dragenter dragstart dragend dragleave dragover drag drop", function (inEvent) {inEvent.preventDefault();});
+        inElement.on('dragenter', handlerEnter);
+        inElement.on('dragleave', handlerLeave);
+        inElement.on('drop', handlerDrop);
+        inElement.on('change', handlerChange);
+        inElement.on('click', function(inEvent){
+            inEvent.stopImmediatePropagation();
+            
+        })
     };
+    
+    return directive;
+    
 }]);
 
 // Core data structure for project. Has methods to load/save state to server, and send jobs to the web worker
