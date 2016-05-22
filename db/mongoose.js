@@ -9,7 +9,8 @@ var Project = new mongoose.Schema({
     data:[],
     labels:[],
     matricies:[],
-    training:{}
+    training:{},
+    shape:[]
 });
 
 var User = new mongoose.Schema({

@@ -126,7 +126,10 @@
                             <br/>
                             <div data-import-csv>drag CSV here to import</div>
                             <br/>
-                            <button class="btn btn-primary">Save</button>
+                            <button class="btn btn-primary">
+                                Save Project
+                                <span class="glyphicon glyphicon-cloud-upload"></span>
+                            </button>
                         </form>
                     </div>
                     <div class="panel-body">
@@ -141,13 +144,22 @@
                         <h3 class="panel-title">Training</h3>
                     </div>
                     <div class="panel-body">
-                        <button class="btn btn-primary" ng-click="webWorker.methods.start()">Train</button>
-                        <button class="btn btn-primary" ng-click="clickReset()">Reset</button>
+                        <div><strong>Layers: </strong></div>
+                        <input type="number" style="width:24%;" ng-repeat="number in saveFile.state.shape track by $index" ng-model="saveFile.state.shape[$index]"/>
+                    </div>
+                    <div class="panel-body">
+                        <button class="btn btn-danger" ng-click="clickReset()">
+                            Start Over <span class="glyphicon glyphicon-refresh"></span>
+                        </button>
+                        <button class="btn btn-primary" ng-click="webWorker.methods.start()">
+                            Train/Continue <span class="glyphicon glyphicon-share-alt"></span>
+                        </button>
                     </div>
                     <div class="panel-body">
                         <div><strong>Error: </strong>{[{ saveFile.state.training.error }]}</div>
                         <div><strong>Epoch: </strong>{[{ saveFile.state.training.iterations }]}</div>
                     </div>
+                    
                 </div>
             </div>
             

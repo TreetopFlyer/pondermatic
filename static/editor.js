@@ -1,5 +1,8 @@
 var App;
-App = angular.module("Application", []);
+App = angular.module("Application", []).config(["$interpolateProvider", function(inInterpolate){
+    inInterpolate.startSymbol('{[{').endSymbol('}]}');
+}]);
+
 App.directive("projectId", ["$parse", "FactorySaveFile", function(inParser, inFactorySaveFile){
     return {
         link: function(inScope, inElement, inAttributes){
@@ -51,16 +54,8 @@ App.directive("importCsv", ["$parse", "FactorySaveFile", function(inParser, inSa
     };
 }]);
 
-App.factory("FactoryTraining", [function(){
-    var training = {};
-    
-    training.iterations = 0;
-    training.error = 0;
-    
-    return training;
-}]);
-
-App.factory("FactorySaveFile", ["$http", function(inHTTP){
+// Core data structure for project. Has methods to load/save state to server, and send jobs to the web worker
+App.factory("FactorySaveFile", ["$http", "FactoryNN", function(inHTTP, inFactoryNN){
     var saveFile = {};
     
     saveFile.methods = {};
@@ -145,25 +140,17 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
     };
     
     saveFile.methods.rebuildNetwork = function(){
-        function MxN(inIn, inOut){
-            var min = [];
-            var max = [];
-            var i;
-            
-            inIn++;
-            for(i=0; i<inIn; i++)
-            {
-                min.push(-1);
-                max.push(1);
+        var structure;
+        var current;
+        structure = [saveFile.state.headers.length];
+        for(var i=0; i<saveFile.state.shape.length; i++){
+            current = saveFile.state.shape[i]
+            if(saveFile.state.shape[i] > 0){
+                structure.push(current);
             }
-            return M.Box([min, max], inOut);
         }
-        
-        saveFile.state.matricies = [];
-        saveFile.state.matricies.push(MxN(saveFile.state.headers.length, 100));
-        saveFile.state.matricies.push(MxN(100, 50));
-        saveFile.state.matricies.push(MxN(50, 10));
-        saveFile.state.matricies.push(MxN(10, saveFile.state.labels[0].machine.length));
+        structure.push(saveFile.state.labels[0].machine.length);
+        saveFile.state.matricies = inFactoryNN.buildMatricies(structure);
     };
     
     //push saveFile.state up to mongo
@@ -171,6 +158,9 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         inHTTP({method:'GET', url:'/api/load/'+ saveFile.state._id, headers:{'Authorization':document.cookie}})
         .then(function(inData){
             saveFile.state = inData.data;
+            if(!saveFile.state.shape || saveFile.state.shape.length == 0){
+                saveFile.state.shape = [120, 50, 0, 0];
+            }
         }, function(inData){console.log("download ERROR", inData);});
     };
     
@@ -196,7 +186,7 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
             mapped[j] = ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0;
         }
         return mapped;
-    }
+    };
     
     saveFile.state = {
         _id:0,
@@ -205,7 +195,8 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         data:{},
         labels:{},
         matricies:{},
-        training:{}
+        training:{},
+        shape:[1, 2, 3]
     };
     
     saveFile.methods.trainingUpdate = function(inIncrement, inError){
@@ -216,13 +207,15 @@ App.factory("FactorySaveFile", ["$http", function(inHTTP){
         saveFile.state.training = {};
         saveFile.state.training.iterations = 0;
         saveFile.state.training.error = 0;
+        saveFile.state.training.rate = 0.1;
     }
     saveFile.methods.trainingReset();
     
     return saveFile;
 }]);
 
-App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
+// Spawns threads for training neural networks
+App.factory("FactoryWebWorker", ["FactorySaveFile", "FactoryNN", function(inFactorySaveFile, inFactoryNN){
     var worker = {};
     
     worker.job = {
@@ -245,7 +238,6 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
         for(i=0; i<inFactorySaveFile.state.labels.length; i++){
             row = inFactorySaveFile.state.data[i];
             label = inFactorySaveFile.state.labels[i].human;
-            data;
             sum = 0;
             for(j=0; j<label.length; j++){
                 sum += label[j];
@@ -256,23 +248,13 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
 
             NN.TrainingSet.AddPoint(worker.job.training, label, inFactorySaveFile.methods.getMappedRow(i));
         }
-        
-        worker.job.network = NN.Network.Create(1, 1, 1, 1, 1);
-        for(i=0; i<inFactorySaveFile.state.matricies.length; i++){
-            worker.job.network.Layers[i].Forward.Matrix = inFactorySaveFile.state.matricies[i];
-            worker.job.network.Layers[i].Backward.Matrix = M.Transpose(inFactorySaveFile.state.matricies[i]);
-        }
-        
-        console.log(worker.job);
+        worker.job.network = inFactoryNN.buildNetwork(inFactorySaveFile.state.matricies);
     };
     worker.methods.done = function(inNetwork){
         var i;
         var input, output;
         
-        inFactorySaveFile.state.matricies = [];
-        for(i=0; i<inNetwork.Layers.length; i++){
-            inFactorySaveFile.state.matricies[i] = inNetwork.Layers[i].Forward.Matrix;
-        }
+        inFactorySaveFile.state.matricies = inFactoryNN.extractMatricies(inNetwork);
         
         for(i=0; i<inFactorySaveFile.state.data.length; i++){
             input = inFactorySaveFile.methods.getMappedRow(i);
@@ -308,12 +290,70 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", function(inFactorySaveFile){
     return worker;
 }]);
 
-App.config(["$interpolateProvider", function(inInterpolate){
-    inInterpolate.startSymbol('{[{').endSymbol('}]}');
+// Abstracts several methods for creating and training neural networks with the NN library 
+App.factory("FactoryNN", [function(){
+    var interface = {};
+    interface.buildMatrix = function(inIn, inOut){
+        var min = [];
+        var max = [];
+        var i;
+        
+        inIn++;
+        for(i=0; i<inIn; i++){
+            min.push(-1);
+            max.push(1);
+        }
+        return M.Box([min, max], inOut);
+    };
+    interface.buildMatricies = function(inArray){
+        var matricies = [];
+        for(var i=0; i<inArray.length-1; i++){
+            matricies.push(interface.buildMatrix(inArray[i], inArray[i+1]));
+        }
+        return matricies;
+    };
+    interface.extractMatricies = function(inNetwork){
+        var output = [];
+        
+        for(var i=0; i<inNetwork.Layers.length; i++){
+            output.push(inNetwork.Layers[i].Forward.Matrix);
+        }
+        
+        return output;
+    };
+    interface.buildNetwork = function(inMatricies){
+        var net = {};
+        net.Layers = [];
+        net.LearningRate = 0.1;
+        net.Error = [];
+        
+        var layer;
+        for(i=0; i<inMatricies.length; i++){
+            layer = {};
+            
+            layer.Forward = {};
+            layer.Forward.Matrix = M.Clone(inMatricies[i]);
+            layer.Forward.StageInput = [];
+            layer.Forward.StageAffine = [];
+            layer.Forward.StageSigmoid = [];
+            layer.Forward.StageDerivative = [];
+            
+            layer.Backward = {};
+            layer.Backward.Matrix = M.Transpose(layer.Forward.Matrix);
+            layer.Backward.StageInput = [];
+            layer.Backward.StageDerivative = [];
+            layer.Backward.StageAffine = [];
+            
+            net.Layers.push(layer);
+        }
+        return net;
+    };
+    return interface;
 }]);
 
-
 App.controller("Controller", ["$scope", "FactorySaveFile", "FactoryWebWorker", function(inScope, inFactorySaveFile, inFactoryWebWorker){
+    
+    inScope.arr = [120, 50, 0, 0];
     
     inScope.saveFile = inFactorySaveFile;
     
