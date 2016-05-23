@@ -141,14 +141,21 @@
                             </div>
                             <br/>
                             <div class="input-group">
-                                <p>Drop CSV file here or click to browse:</p>
+                                <span class="input-group-addon">Import:</span>
                                 <input type="file" data-import-csv class="form-control" />
                             </div>
+                            <span class="help-block">Drop CSV file here or click to browse. CSV cells must be comma separated and \lf delimited</span>
                             <br/>
-                            <button class="btn btn-primary">
+                            <button ng-show="saveFile.state.data.length > 0" class="btn btn-primary">
                                 Save Project
                                 <span class="glyphicon glyphicon-cloud-upload"></span>
                             </button>
+                            <!--
+                            <button class="btn btn-warning">
+                                Save Copy
+                                <span class="glyphicon glyphicon-duplicate"></span>
+                            </button>
+                            -->
                         </form>
                     </div>
                     <div class="panel-body">
@@ -163,15 +170,20 @@
                         <h3 class="panel-title">Training</h3>
                     </div>
                     <div class="panel-body">
-                        <div><strong>Layers: </strong></div>
-                        <input type="number" style="width:24%;" ng-repeat="number in saveFile.state.shape track by $index" ng-model="saveFile.state.shape[$index]"/>
+                        
+                        <div class="input-group">
+                            <span class="input-group-addon">Layers:</span>
+                            <input type="number" class="form-control" style="width:24%;" ng-repeat="number in saveFile.state.shape track by $index" ng-model="saveFile.state.shape[$index]"/>
+                        </div>
+                        
                     </div>
                     <div class="panel-body">
-                        <button class="btn btn-danger" ng-click="clickReset()">
-                            Start Over <span class="glyphicon glyphicon-refresh"></span>
+                        
+                        <button class="btn btn-primary" ng-click="clickTrain()">
+                            Train/Continue <span class="glyphicon glyphicon-cog"></span>
                         </button>
-                        <button class="btn btn-primary" ng-click="webWorker.methods.start()">
-                            Train/Continue <span class="glyphicon glyphicon-share-alt"></span>
+                        <button class="btn btn-danger" ng-click="clickReset()" ng-show="saveFile.state.training.iterations > 0">
+                            Start Over <span class="glyphicon glyphicon-refresh"></span>
                         </button>
                     </div>
                     <div class="panel-body">
@@ -200,22 +212,19 @@
     </div>
     
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-        
-    <table class="table table-hover table-condensed">
+
+    <table class="table table-hover table-condensed" ng-show="saveFile.state.data.length > 0">
         <thead>
             <th>Human Labels</th>
             <th>Machine Labels</th>
             <th ng-repeat="column in saveFile.state.headers" ng-class="{'disabled':!column.active}">
-                <button ng-show="column.active" ng-click="column.active = false" class="btn btn-primary btn-sm">
+                <button ng-show="column.active" ng-click="clickColumnHide(column);" class="btn btn-primary btn-sm">
                     <span>
                         <span class="glyphicon glyphicon-eye-close"></span>
                         <span>Ignore</span>
                     </span>
                 </button>
-                <button ng-hide="column.active" ng-click="column.active = true" class="btn btn-default btn-sm">
+                <button ng-hide="column.active" ng-click="clickColumnShow(column);" class="btn btn-default btn-sm">
                     <span>
                         <span class="glyphicon glyphicon-eye-open"></span>
                         <span>Include</span>
@@ -255,9 +264,7 @@
             </tr>
         </tbody>
     </table>
-        </div>
-    </div>
-</div>
+
 
 </div>
 <script src="/static/editor.js"></script>

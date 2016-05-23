@@ -151,15 +151,25 @@ App.factory("FactorySaveFile", ["$http", "FactoryNN", function(inHTTP, inFactory
             });
         }
         
-        saveFile.methods.rebuildNetwork();
+        saveFile.methods.rebuildMatricies();
         saveFile.methods.trainingReset();
     };
     
-    saveFile.methods.rebuildNetwork = function(){
+    saveFile.methods.rebuildMatricies = function(){
+        var i;
         var structure;
         var current;
-        structure = [saveFile.state.headers.length];
-        for(var i=0; i<saveFile.state.shape.length; i++){
+        var active;
+        
+        active = 0;
+        for(i=0; i<saveFile.state.headers.length; i++){
+            if(saveFile.state.headers[i].active){
+                active++;
+            }
+        }
+        
+        structure = [active];
+        for(i=0; i<saveFile.state.shape.length; i++){
             current = saveFile.state.shape[i]
             if(saveFile.state.shape[i] > 0){
                 structure.push(current);
@@ -198,8 +208,13 @@ App.factory("FactorySaveFile", ["$http", "FactoryNN", function(inHTTP, inFactory
         var row = saveFile.state.data[inIndex];
         var mapped = [];
         for(j=0; j<row.length; j++){
+            
+            if(!saveFile.state.headers[j].active){
+                continue;
+            }
+            
             column = saveFile.state.headers[j];
-            mapped[j] = ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0;
+            mapped.push( ((row[j] - column.min)/(column.max - column.min)*2 - 1) || 0 );
         }
         return mapped;
     };
@@ -237,7 +252,8 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", "FactoryNN", function(inFact
     worker.job = {
         training:{},
         network:{},
-        iterations:100
+        iterations:500,
+        learningRate:0.1
     };
     
     worker.handlers = {
@@ -265,6 +281,7 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", "FactoryNN", function(inFact
             NN.TrainingSet.AddPoint(worker.job.training, label, inFactorySaveFile.methods.getMappedRow(i));
         }
         worker.job.network = inFactoryNN.buildNetwork(inFactorySaveFile.state.matricies);
+
     };
     worker.methods.done = function(inNetwork){
         var i;
@@ -293,8 +310,6 @@ App.factory("FactoryWebWorker", ["FactorySaveFile", "FactoryNN", function(inFact
                     break;
             }
         }, false);
-        
-        worker.methods.prep();
         worker.thread.postMessage(worker.job);
     };
     worker.methods.stop = function(){
@@ -369,24 +384,44 @@ App.factory("FactoryNN", [function(){
 
 App.controller("Controller", ["$scope", "FactorySaveFile", "FactoryWebWorker", function(inScope, inFactorySaveFile, inFactoryWebWorker){
     
-    inScope.arr = [120, 50, 0, 0];
-    
     inScope.saveFile = inFactorySaveFile;
     
     inScope.clickLabel = function(i, j){
         inScope.saveFile.state.labels[i].human[j] = ! inScope.saveFile.state.labels[i].human[j];
     };
     inScope.clickReset = function(){
-        inScope.saveFile.methods.rebuildNetwork();
         inScope.saveFile.methods.trainingReset();
-    }
+    };
+    inScope.clickTrain = function(){
+        if(inScope.saveFile.state.training.iterations == 0){
+            inScope.saveFile.methods.rebuildMatricies();
+        }
+        inScope.webWorker.methods.prep();
+        if(inScope.webWorker.job.training.Output.length == 0){
+            alert("No rows were labeled");
+            return;
+        }
+        if(inScope.webWorker.job.training.Input[0].length == 0){
+            alert("No data found in table");
+            return;
+        }
+        
+        inScope.webWorker.methods.start();
+    };
+    inScope.clickColumnHide = function(inColumn){
+        inColumn.active = false;
+        inScope.saveFile.methods.trainingReset();
+    };
+    inScope.clickColumnShow = function(inColumn){
+        inColumn.active = true;
+        inScope.saveFile.methods.trainingReset();
+    };
+    
     inScope.handlerUpdate = function(inEvent){
         inScope.saveFile.methods.trainingUpdate(inEvent.stride, inEvent.error);
         inScope.$apply();
-        console.log("update", inEvent);
     };
     inScope.handlerDone = function(inEvent){
-        console.log("done", inEvent);
         inScope.$apply();
     };
     

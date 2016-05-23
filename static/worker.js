@@ -4,6 +4,7 @@ importScripts(
 );
 
 function error(inM){
+
   var sum = 0;
   var i, j;
   for(i=0; i<inM.length; i++){
@@ -19,10 +20,11 @@ self.addEventListener('message', function(e) {
   var nn = e.data.network;
   var ts = e.data.training;
   var it = e.data.iterations;
+  var lr = e.data.learningRate;
   var i;
   var stride = 10;
-  
-  nn.LearningRate = 0.1;
+
+  nn.LearningRate = lr;
   for(i=0; i<it; i+=stride){
     NN.Network.Batch(nn, ts, stride);
     self.postMessage({type:"progress", iteration:(i+stride), stride:stride, error:error(nn.Error)});

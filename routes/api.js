@@ -12,6 +12,28 @@ router.get("/create/:name", function(inReq, inRes){
     });
 });
 
+/*
+router.post("/save-copy/:name", function(inReq, inRes){
+    var creationResponse;
+    db.getUser(inReq.Auth.ID)
+    .then(function(inUser){
+        return db.createProject(inUser, inReq.params.name);
+    })
+    .then(function(inResolveData){
+        
+        creationResponse = inResolveData;
+        
+        inUser.projects.id(inResolveData._id).remove();
+        inUser.projects.push(inReq.body);
+        return db.saveUser(inUser);
+        
+        inRes.json(creationResponse);
+    }).then(function(inResolveData){
+        
+    });
+});
+*/
+
 router.post("/save", function(inReq, inRes){
 
     db.getUser(inReq.Auth.ID)
