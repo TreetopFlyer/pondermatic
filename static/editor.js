@@ -219,6 +219,15 @@ App.factory("FactorySaveFile", ["$http", "FactoryNN", function(inHTTP, inFactory
         return mapped;
     };
     
+    saveFile.methods.flushLabelsHuman = function(){
+        var i, j;
+        for(i=0; i<saveFile.state.labels.length; i++){
+            for(j=0; j<saveFile.state.labels[i].human.length; j++){
+                saveFile.state.labels[i].human[j] = false;
+            }
+        }
+    };
+    
     saveFile.state = {
         _id:0,
         profile:{},
@@ -238,7 +247,6 @@ App.factory("FactorySaveFile", ["$http", "FactoryNN", function(inHTTP, inFactory
         saveFile.state.training = {};
         saveFile.state.training.iterations = 0;
         saveFile.state.training.error = 0;
-        saveFile.state.training.rate = 0.1;
     }
     saveFile.methods.trainingReset();
     
@@ -415,6 +423,10 @@ App.controller("Controller", ["$scope", "FactorySaveFile", "FactoryWebWorker", f
     inScope.clickColumnShow = function(inColumn){
         inColumn.active = true;
         inScope.saveFile.methods.trainingReset();
+    };
+    
+    inScope.clickColumnClearHuman = function(){
+        inScope.saveFile.methods.flushLabelsHuman();
     };
     
     inScope.handlerUpdate = function(inEvent){

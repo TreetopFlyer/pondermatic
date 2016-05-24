@@ -128,7 +128,7 @@
     <div class="container" data-project-id="{{_id}}">
         <div class="row">
             
-            <div class=col-md-5>
+            <div class=col-md-4>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Project</h3>
@@ -164,21 +164,26 @@
                 </div>
             </div>
             
-            <div class=col-md-5>
+            <div class=col-md-6>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Training</h3>
                     </div>
                     <div class="panel-body">
-                        
                         <div class="input-group">
                             <span class="input-group-addon">Layers:</span>
-                            <input type="number" class="form-control" style="width:24%;" ng-repeat="number in saveFile.state.shape track by $index" ng-model="saveFile.state.shape[$index]"/>
+                            <input type="number" class="form-control" style="width:25%;" ng-repeat="number in saveFile.state.shape track by $index" ng-model="saveFile.state.shape[$index]"/>
                         </div>
-                        
                     </div>
                     <div class="panel-body">
-                        
+                        <div class="input-group">
+                            <span class="input-group-addon">Rate:</span>
+                            <input type="number" ng-model="webWorker.job.learningRate" class="form-control">
+                            <span class="input-group-addon">Iterations:</span>
+                            <input type="number" ng-model="webWorker.job.iterations" class="form-control">
+                        </div>
+                    </div>
+                    <div class="panel-body">
                         <button class="btn btn-primary" ng-click="clickTrain()">
                             Train/Continue <span class="glyphicon glyphicon-cog"></span>
                         </button>
@@ -190,7 +195,6 @@
                         <div><strong>Error: </strong>{[{ saveFile.state.training.error }]}</div>
                         <div><strong>Epoch: </strong>{[{ saveFile.state.training.iterations }]}</div>
                     </div>
-                    
                 </div>
             </div>
             
@@ -215,7 +219,13 @@
 
     <table class="table table-hover table-condensed" ng-show="saveFile.state.data.length > 0">
         <thead>
-            <th>Human Labels</th>
+            <th>
+                <button class="btn btn-danger btn-sm" ng-click="clickColumnClearHuman()">
+                    Clear Labels <span class="glyphicon glyphicon-remove"></span>
+                </button>
+                <br/>
+                Human Labels
+            </th>
             <th>Machine Labels</th>
             <th ng-repeat="column in saveFile.state.headers" ng-class="{'disabled':!column.active}">
                 <button ng-show="column.active" ng-click="clickColumnHide(column);" class="btn btn-primary btn-sm">
