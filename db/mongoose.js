@@ -1,5 +1,8 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/Pondermatic');
+var env = require('../environment.js');
+var config = require('./config');
+
+mongoose.connect(config[env]);
 
 var Project = new mongoose.Schema({
     profile:{
