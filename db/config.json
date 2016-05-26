@@ -1,5 +1,0 @@
-{
-    "production": "mongodb://pondermatic:ReallyReallyBig@ds013908.mlab.com:13908/pondermatic",
-    "development": "mongodb://localhost/Pondermatic-Dev",
-    "test": "mongodb://localhost/Pondermatic-Test"
-}

@@ -1,13 +1,13 @@
+require('dotenv').config();
 var mongoose = require('mongoose');
 var env = require('../environment.js');
-var config = require('./config');
 var models = require('./models.js');
 
 var UserClass = models.User;
 var ProjectClass = models.Project;
 
-console.log(config[env]);
-mongoose.connect(config[env]);
+console.log("connecting to", process.env.DATABASE);
+mongoose.connect(process.env.DATABASE);
 
 var db = {};
 db.createUser = function(inName, inID){
