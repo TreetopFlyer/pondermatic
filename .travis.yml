@@ -8,3 +8,11 @@ addons:
     - mongodb-3.2-precise
     packages:
     - mongodb-org-server
+deploy:
+  provider: heroku
+  api_key:
+    secure: Mkg30v33W8YEqt+p0dzgYUc70cSUaKz/AkA0gjV6rTG2p/YhjU/us+qBZ/ERJlKRnNOAEr5JbYFPST7GNaICgJImvEubFovgeHfa5zZxXRqwcRf9teVBEbZZfwDcPfJoLjOgI7xCtEZIxHUzGbzjYCEiYx2+M64UQ4r9laN35zLffJeNmTKcUWGGDYSF6M7CbRn4CmoQjkZJ4LjmblfvfXRZtE3jfF/9t/JD5P9FmeSr4QI6fnvYdzG8O0eyejdpJyEfx3rcWE0Se5sQaLBj+KY1FsMbrMDAdc7QbXvOqr075pA14wcL+8CpF/Vs4W//5Gmm0yFpoyKfkDfjS7dBK/HvpAilk2zJW2EwnoJybYDAQ+SToEycQEqmi4r48XH2Vfdgt2+8BQ4J6WpkOaxSV58zAlvLNPy8a7n6LmIOFv3wqjg9PFtU/nYRXmjPZVT9rwhFPB4fMyKKc3WKBdWdgyE/U47ZDmRs71WvPCRLzqYOHEgnGE/zW1OwuhTWxo9KovZVfHzU+8MxSPeMoVVD2G3ZwSAbc3gtxtHtatAtpDZt6fONxwlPuzFFoo/+BhrMDa6t+hhGcVomAsFXeq6co1XSNxRK+S8crKjf5DyShvJ6RJqCqpOUuVLxw7RlP5WrqrTZQRc7jjlJam/ZAwqyK3GtCvX47ujm653Ynxr0Rh4=
+  app: pondermatic
+  on:
+    repo: TreetopFlyer/pondermatic
+    branch: testing
