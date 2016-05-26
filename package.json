@@ -18,5 +18,10 @@
     "mongoose": "^4.4.17",
     "sha1": "^1.1.1",
     "unirest": "^0.5.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-http": "^2.0.1",
+    "mocha": "^2.5.3"
   }
 }

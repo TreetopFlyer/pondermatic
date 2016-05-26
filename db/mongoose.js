@@ -1,32 +1,13 @@
 var mongoose = require('mongoose');
 var env = require('../environment.js');
 var config = require('./config');
+var models = require('./models.js');
 
+var UserClass = models.User;
+var ProjectClass = models.Project;
+
+console.log(config[env]);
 mongoose.connect(config[env]);
-
-var Project = new mongoose.Schema({
-    profile:{
-        name:String,
-    },
-    headers:[],
-    data:[],
-    labels:[],
-    matricies:[],
-    training:{},
-    shape:[]
-});
-
-var User = new mongoose.Schema({
-    profile:{
-        name:String,
-        id:String
-    },
-    projects:[Project]
-});
-
-var UserClass = mongoose.model("User", User);
-var ProjectClass = mongoose.model("User", User);
-
 
 var db = {};
 db.createUser = function(inName, inID){
@@ -55,6 +36,18 @@ db.getUser = function(inID){
     });
 };
 
+db.saveUser = function(inUserObject){
+    return new Promise(function(inResolve, inReject){
+        inUserObject.save(function(inError){
+            if(!inError){
+                inResolve(inUserObject);
+            }else{
+                inReject(inError);
+            }
+        });
+    });
+};
+
 // this method is strange. there is overlap with db.saveUser
 db.createProject = function(inUserObject, inName){
     return new Promise(function(inResolve, inReject){
@@ -78,18 +71,6 @@ db.getOverview = function(inUserID){
         .exec(function(inError, inUser){
             if(!inError){
                 inResolve(inUser);
-            }else{
-                inReject(inError);
-            }
-        });
-    });
-};
-
-db.saveUser = function(inUserObject){
-    return new Promise(function(inResolve, inReject){
-        inUserObject.save(function(inError){
-            if(!inError){
-                inResolve(inUserObject);
             }else{
                 inReject(inError);
             }
