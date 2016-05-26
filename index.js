@@ -34,4 +34,4 @@ server.get("/", function(inReq, inRes){
     inRes.render("home");
 });
 
-server.listen(80);
+server.listen(process.env.PORT || 80);
