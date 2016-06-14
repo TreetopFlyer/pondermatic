@@ -1,8 +1,8 @@
 var chai = require('chai');
 var chaiHTTP = require('chai-http');
 var models = require('../db/models.js');
-
 var db = require('../db/mongoose.js');
+
 chai.should();
 chai.use(chaiHTTP);
 
